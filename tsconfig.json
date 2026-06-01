@@ -1,6 +1,15 @@
 {
     "compilerOptions": {
         "strict": true,
+        "target": "esnext",
+        "module": "preserve",
+        "moduleResolution": "bundler",
+        "allowImportingTsExtensions": true,
+        "lib": ["esnext"],
+        "types": ["node"],
+        "skipLibCheck": true,
+        "noEmit": true,
+        "esModuleInterop": true,
         "jsx": "react-jsx",
         "jsxImportSource": "hono/jsx"
     }
