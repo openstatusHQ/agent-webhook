@@ -1,0 +1,12 @@
+{
+    "name": "agent-webhook",
+    "type": "module",
+    "scripts": {
+        "dev": "srvx --entry ./src/server.ts",
+        "start": "srvx --entry ./src/server.ts --prod"
+    },
+    "dependencies": {
+        "hono": "^4.12.23",
+        "srvx": "^0.11.16"
+    }
+}
