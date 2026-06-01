@@ -1,0 +1,10 @@
+{
+    "language_servers": [
+        "vtsls",
+        "json-language-server",
+        "package-version-server",
+        "oxlint",
+        "oxfmt",
+        "color-lsp"
+    ]
+}
