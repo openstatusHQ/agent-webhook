@@ -13,14 +13,14 @@ to the OpenStatus repo — findings only.
 ## TL;DR (most important first)
 
 1. **MCP exposes monitor + response-log read tools — the docs page omits them
-   entirely.** Biggest gap. The agent *can* investigate real check data.
+   entirely.** Biggest gap. The agent _can_ investigate real check data.
 2. **The MCP `/reference/mcp-server` page lists 9 tools; the server registers ~6
    tool groups** (page, status-report, maintenance, monitor, notification,
    audit) — docs undercount.
 3. **Webhook payload is one flat schema**, not the failure/recovery split the
    docs imply. All extra fields are optional on every status.
 4. **`@openstatus/sdk-node` is real and on npm (`0.1.6`)** but lives in a
-   *separate* repo (`openstatushq/sdk-node`), not the monorepo. Young.
+   _separate_ repo (`openstatushq/sdk-node`), not the monorepo. Young.
 5. **No webhook signing/HMAC** — custom headers are the only auth. By design.
 
 ---
@@ -43,8 +43,8 @@ PayloadSchema = {
 ```
 
 - **One flat schema** for all three statuses. `statusCode` / `latency` /
-  `errorMessage` are *optional on every status* — the sender populates all of
-  them on failure, degraded, *and* recovery (`sendAlert`/`sendDegraded`/
+  `errorMessage` are _optional on every status_ — the sender populates all of
+  them on failure, degraded, _and_ recovery (`sendAlert`/`sendDegraded`/
   `sendRecovery` all `PayloadSchema.parse` the same shape).
 - Custom headers: supported — `transformHeaders(notificationData.webhook.headers)`.
   So `x-webhook-secret` works.
@@ -66,24 +66,24 @@ definitions in `packages/services/src/agent-tools/*`.
 
 **Monitor read tools (ALL undocumented on the MCP reference page):**
 
-| Tool | Purpose |
-|---|---|
-| `list_monitors` | discover numeric monitorId; incl. `activeIncidentCount` |
-| `get_monitor` | monitor config |
-| `get_monitor_status` | status over window `1d`/`7d`/`14d` |
-| `get_monitor_summary` | uptime/latency aggregates + timing breakdown (dns/connect/tls/ttfb/transfer), `1d`/`7d`/`14d` |
-| `list_response_logs` | individual check results — `requestStatus` (success/error/degraded), `statusCode`, `latency`, `region`, timestamps; paginated (limit ≤100) |
-| `get_response_log` | single response log by id |
+| Tool                  | Purpose                                                                                                                                    |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `list_monitors`       | discover numeric monitorId; incl. `activeIncidentCount`                                                                                    |
+| `get_monitor`         | monitor config                                                                                                                             |
+| `get_monitor_status`  | status over window `1d`/`7d`/`14d`                                                                                                         |
+| `get_monitor_summary` | uptime/latency aggregates + timing breakdown (dns/connect/tls/ttfb/transfer), `1d`/`7d`/`14d`                                              |
+| `list_response_logs`  | individual check results — `requestStatus` (success/error/degraded), `statusCode`, `latency`, `region`, timestamps; paginated (limit ≤100) |
+| `get_response_log`    | single response log by id                                                                                                                  |
 
 **Status report tools** (`scope`/`destructive` from source):
 
-| Tool | scope | notify |
-|---|---|---|
-| `list_status_reports` | read | — |
-| `create_status_report` | write (destructive) | yes |
-| `add_status_report_update` | write (destructive) | yes |
-| `update_status_report` | write (destructive) | **none** (metadata only) |
-| `resolve_status_report` | write (destructive) | yes |
+| Tool                       | scope               | notify                   |
+| -------------------------- | ------------------- | ------------------------ |
+| `list_status_reports`      | read                | —                        |
+| `create_status_report`     | write (destructive) | yes                      |
+| `add_status_report_update` | write (destructive) | yes                      |
+| `update_status_report`     | write (destructive) | **none** (metadata only) |
+| `resolve_status_report`    | write (destructive) | yes                      |
 
 - Report status enum: `investigating | identified | monitoring | resolved`.
 - `create_status_report` needs `pageId` (from `list_status_pages`) +
@@ -103,15 +103,15 @@ definitions in `packages/services/src/agent-tools/*`.
 
 ## Disparities (docs vs. code)
 
-| # | Docs say | Code says | Impact |
-|---|---|---|---|
-| 1 | MCP read tools = pages/components/reports/maintenances only | MCP also exposes 6 monitor tools incl. `get_monitor_summary` + `list_response_logs` | **Agent CAN investigate real check data.** Resolves the open agent-data question. |
-| 2 | "9 MCP tools" | 6 tool *groups* (page, status-report, maintenance, monitor, notification, audit) | Docs undercount; notification + audit tools undocumented |
-| 3 | Webhook: separate failure (`errorMessage`) vs recovery (`statusCode`/`latency`) payloads | Single flat schema; all extras optional on every status | Our `WebhookPayload` should be one flat schema, not a discriminated union |
-| 4 | `notify` "required, no default; schema rejects omission" | Schema field is a required `z.boolean()`, **but** MCP registration injects it via a host `extraFlags`/`applyFlags` layer defaulting to `false` (`flags.notify ?? false`), overriding the model | Host can force `notify:false` regardless of the model — stronger safety than docs describe |
-| 5 | SDK presented as first-class | Real on npm but `0.1.6`, separate repo, not in monorepo | Maturity/risk note for committing to the SDK |
-| 6 | Webhook auth via custom headers | Confirmed — and **no signing path exists** | Shared-secret header is the only option (our approach is correct) |
-| 7 | Webhook payload documented under `/reference/notification` only | — | Discoverability gap: nothing under `/integrations/webhook` |
+| #   | Docs say                                                                                 | Code says                                                                                                                                                                                      | Impact                                                                                     |
+| --- | ---------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| 1   | MCP read tools = pages/components/reports/maintenances only                              | MCP also exposes 6 monitor tools incl. `get_monitor_summary` + `list_response_logs`                                                                                                            | **Agent CAN investigate real check data.** Resolves the open agent-data question.          |
+| 2   | "9 MCP tools"                                                                            | 6 tool _groups_ (page, status-report, maintenance, monitor, notification, audit)                                                                                                               | Docs undercount; notification + audit tools undocumented                                   |
+| 3   | Webhook: separate failure (`errorMessage`) vs recovery (`statusCode`/`latency`) payloads | Single flat schema; all extras optional on every status                                                                                                                                        | Our `WebhookPayload` should be one flat schema, not a discriminated union                  |
+| 4   | `notify` "required, no default; schema rejects omission"                                 | Schema field is a required `z.boolean()`, **but** MCP registration injects it via a host `extraFlags`/`applyFlags` layer defaulting to `false` (`flags.notify ?? false`), overriding the model | Host can force `notify:false` regardless of the model — stronger safety than docs describe |
+| 5   | SDK presented as first-class                                                             | Real on npm but `0.1.6`, separate repo, not in monorepo                                                                                                                                        | Maturity/risk note for committing to the SDK                                               |
+| 6   | Webhook auth via custom headers                                                          | Confirmed — and **no signing path exists**                                                                                                                                                     | Shared-secret header is the only option (our approach is correct)                          |
+| 7   | Webhook payload documented under `/reference/notification` only                          | —                                                                                                                                                                                              | Discoverability gap: nothing under `/integrations/webhook`                                 |
 
 ---
 
@@ -150,16 +150,16 @@ definitions in `packages/services/src/agent-tools/*`.
 
 All paths under `openstatusHQ/openstatus` (monorepo). One row per edit.
 
-| Finding | File | Change |
-|---|---|---|
-| #1 | `apps/docs/src/content/docs/reference/mcp-server.mdx` | Add the **monitor tool group** — `list_monitors`, `get_monitor`, `get_monitor_status`, `get_monitor_summary`, `list_response_logs`, `get_response_log` (incl. the `1d`/`7d`/`14d` windows and response-log fields). |
-| #2 | `apps/docs/src/content/docs/reference/mcp-server.mdx` | Fix the "9 tools" count; add the **notification** and **audit** tool groups so the list matches `server.ts` registration. |
-| #4 | `apps/docs/src/content/docs/reference/mcp-server.mdx` | Correct the `notify` description: the schema field is required, but the MCP host layer (`extraFlags`/`applyFlags`) injects/overrides it with a **default of `false`** — not "no default". |
-| #3 | `apps/docs/src/content/docs/reference/notification.mdx` | Replace the failure-vs-recovery split with the **single flat `PayloadSchema`**; state all extra fields (`statusCode`, `latency`, `errorMessage`) are optional on every status. |
-| #6 | `apps/docs/src/content/docs/reference/notification.mdx` | Add an explicit note: **no payload signing/HMAC** — custom headers are the only auth (so a shared secret is the only verification). |
-| #7 | `apps/docs/src/content/docs/reference/notification.mdx` | Discoverability: add an alias/redirect or cross-link from an `/integrations/webhook` slug, since the webhook payload is only reachable under `/reference/notification`. |
-| #5 | `apps/docs/src/content/docs/sdk/nodejs/index.mdx` + `getting-started.mdx` | Note the package version/maturity (`0.1.6`) and that the SDK lives in a **separate repo** (`openstatushq/sdk-node`), not the monorepo. |
-| #5 | `apps/docs/src/content/docs/sdk/nodejs/status-report-service.mdx` | Confirm/show the `notify` parameter on `createStatusReport` / `addStatusReportUpdate` and the `RESOLVED`-via-update path, so it matches the MCP tool semantics. |
+| Finding | File                                                                      | Change                                                                                                                                                                                                              |
+| ------- | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| #1      | `apps/docs/src/content/docs/reference/mcp-server.mdx`                     | Add the **monitor tool group** — `list_monitors`, `get_monitor`, `get_monitor_status`, `get_monitor_summary`, `list_response_logs`, `get_response_log` (incl. the `1d`/`7d`/`14d` windows and response-log fields). |
+| #2      | `apps/docs/src/content/docs/reference/mcp-server.mdx`                     | Fix the "9 tools" count; add the **notification** and **audit** tool groups so the list matches `server.ts` registration.                                                                                           |
+| #4      | `apps/docs/src/content/docs/reference/mcp-server.mdx`                     | Correct the `notify` description: the schema field is required, but the MCP host layer (`extraFlags`/`applyFlags`) injects/overrides it with a **default of `false`** — not "no default".                           |
+| #3      | `apps/docs/src/content/docs/reference/notification.mdx`                   | Replace the failure-vs-recovery split with the **single flat `PayloadSchema`**; state all extra fields (`statusCode`, `latency`, `errorMessage`) are optional on every status.                                      |
+| #6      | `apps/docs/src/content/docs/reference/notification.mdx`                   | Add an explicit note: **no payload signing/HMAC** — custom headers are the only auth (so a shared secret is the only verification).                                                                                 |
+| #7      | `apps/docs/src/content/docs/reference/notification.mdx`                   | Discoverability: add an alias/redirect or cross-link from an `/integrations/webhook` slug, since the webhook payload is only reachable under `/reference/notification`.                                             |
+| #5      | `apps/docs/src/content/docs/sdk/nodejs/index.mdx` + `getting-started.mdx` | Note the package version/maturity (`0.1.6`) and that the SDK lives in a **separate repo** (`openstatushq/sdk-node`), not the monorepo.                                                                              |
+| #5      | `apps/docs/src/content/docs/sdk/nodejs/status-report-service.mdx`         | Confirm/show the `notify` parameter on `createStatusReport` / `addStatusReportUpdate` and the `RESOLVED`-via-update path, so it matches the MCP tool semantics.                                                     |
 
 Source-of-truth references for the edits:
 `packages/notifications/webhook/src/{schema,index}.ts` (payload, headers, no
