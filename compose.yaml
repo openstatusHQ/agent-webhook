@@ -1,6 +1,7 @@
 services:
     web:
-        build: .
+        image: ghcr.io/openstatushq/agent-webhook:latest
+        platform: linux/amd64
         env_file: .env
         ports:
             - "3000:3000"
