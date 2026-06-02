@@ -2,8 +2,14 @@ node_modules
 .env
 .env*
 compose.yaml
+Dockerfile
 *.config.ts
 test.ts
 mock.ts
 .workmux.yaml
 .zed
+.git
+.github
+.gitignore
+.dockerignore
+README.md

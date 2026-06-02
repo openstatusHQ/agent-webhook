@@ -21,13 +21,18 @@ WORKDIR /app
 COPY --from=installer /app/node_modules ./node_modules
 COPY . .
 
-RUN deno compile -A --output /app/server ./src/server.ts
+RUN deno compile \
+    --allow-net --allow-env --allow-read --allow-sys \
+    --output /app/server ./src/server.ts
 
 
-FROM debian:trixie-slim
+FROM gcr.io/distroless/cc-debian12:nonroot
 
 WORKDIR /app
 
-COPY --from=builder /app/server .
+COPY --from=builder /app/server /app/server
 
-CMD ["./server"]
+ENV PORT=3000
+EXPOSE 3000
+
+CMD ["/app/server"]
