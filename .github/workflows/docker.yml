@@ -1,0 +1,91 @@
+name: docker
+
+on:
+    push:
+        branches: [main]
+        tags: ["v*"]
+    pull_request:
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            packages: write
+        steps:
+            - uses: actions/checkout@v4
+
+            - uses: docker/setup-buildx-action@v3
+
+            - name: Build image
+              uses: docker/build-push-action@v6
+              with:
+                  context: .
+                  load: true
+                  tags: agent-webhook:ci
+                  cache-from: type=gha
+                  cache-to: type=gha,mode=max
+
+            - name: Smoke test
+              run: |
+                  docker run -d --name agent-webhook -p 3000:3000 \
+                    -e OPENSTATUS_API_KEY=ci-dummy \
+                    -e AI_GATEWAY_API_KEY=ci-dummy \
+                    -e WEBHOOK_SECRET=ci-secret \
+                    -e DRY_RUN=true \
+                    agent-webhook:ci
+
+                  for i in $(seq 1 30); do
+                    if curl -fsS http://localhost:3000/ >/dev/null 2>&1; then up=1; break; fi
+                    sleep 1
+                  done
+                  if [ -z "$up" ]; then
+                    echo "::error::server did not become reachable"
+                    docker logs agent-webhook
+                    exit 1
+                  fi
+
+                  echo "GET / returns 'ok'"
+                  test "$(curl -fsS http://localhost:3000/)" = "ok"
+
+                  echo "POST /webhook without secret returns 401"
+                  code=$(curl -s -o /dev/null -w '%{http_code}' -X POST \
+                    http://localhost:3000/webhook \
+                    -H 'content-type: application/json' -d '{}')
+                  test "$code" = "401"
+
+                  docker logs agent-webhook
+                  docker rm -f agent-webhook
+
+            # Publish only on pushes to main / version tags — never on PRs,
+            # and only after the smoke test above has passed.
+            - name: Log in to GHCR
+              if: github.event_name == 'push'
+              uses: docker/login-action@v3
+              with:
+                  registry: ghcr.io
+                  username: ${{ github.actor }}
+                  password: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Image metadata
+              if: github.event_name == 'push'
+              id: meta
+              uses: docker/metadata-action@v5
+              with:
+                  images: ghcr.io/${{ github.repository }}
+                  tags: |
+                      type=raw,value=latest,enable={{is_default_branch}}
+                      type=sha
+                      type=semver,pattern={{version}}
+                      type=semver,pattern={{major}}.{{minor}}
+
+            - name: Push image
+              if: github.event_name == 'push'
+              uses: docker/build-push-action@v6
+              with:
+                  context: .
+                  push: true
+                  tags: ${{ steps.meta.outputs.tags }}
+                  labels: ${{ steps.meta.outputs.labels }}
+                  cache-from: type=gha
+                  cache-to: type=gha,mode=max
