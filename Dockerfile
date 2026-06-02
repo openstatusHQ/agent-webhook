@@ -26,7 +26,7 @@ RUN deno compile \
     --output /app/server ./src/server.ts
 
 
-FROM gcr.io/distroless/cc-debian12:nonroot
+FROM registry.access.redhat.com/hi/core-runtime:latest
 
 WORKDIR /app
 
