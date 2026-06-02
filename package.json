@@ -2,9 +2,10 @@
     "name": "agent-webhook",
     "type": "module",
     "scripts": {
-        "dev": "srvx --entry ./src/server.ts",
-        "start": "srvx --entry ./src/server.ts --prod",
-        "mock": "node test.ts",
+        "dev": "node --watch ./src/server.ts",
+        "start": "node ./src/server.ts",
+        "mock": "node mock.ts",
+        "test": "node test.ts",
         "typecheck": "tsgo --noEmit",
         "fmt": "oxfmt",
         "fmt:check": "oxfmt --check"

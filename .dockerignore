@@ -1,0 +1,9 @@
+node_modules
+.env
+.env*
+compose.yaml
+*.config.ts
+test.ts
+mock.ts
+.workmux.yaml
+.zed

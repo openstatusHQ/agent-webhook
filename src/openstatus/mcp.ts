@@ -1,4 +1,5 @@
-import { Client } from "@modelcontextprotocol/sdk/client/index.js"
+import { Client } from "@modelcontextprotocol/sdk/client"
+// @ts-types="@modelcontextprotocol/sdk/client/streamableHttp"
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js"
 import { tool, type JSONValue, type Tool, type ToolSet } from "ai"
 import { type, type Type } from "arktype"

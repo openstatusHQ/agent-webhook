@@ -2,6 +2,7 @@ import { createHash, timingSafeEqual } from "node:crypto"
 
 import { type } from "arktype"
 import { Hono } from "hono"
+import { serve } from "srvx"
 
 import { eventKey, markIfNew } from "./dedup.ts"
 import { env } from "./env.ts"
@@ -48,4 +49,4 @@ app.post("/webhook", async (c) => {
     return c.json({ status: "accepted" }, 202)
 })
 
-export default app
+serve({ port: env.PORT, fetch: app.fetch })
