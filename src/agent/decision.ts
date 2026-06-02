@@ -51,6 +51,9 @@ export async function executeDecision(
                 pageId: action.pageId,
                 pageComponentIds: action.pageComponentIds ?? []
             })
+            console.log(
+                `[agent-webhook] created status report on page ${action.pageId}`
+            )
             continue
         }
 
@@ -68,6 +71,9 @@ export async function executeDecision(
                 status,
                 message: action.message
             })
+            console.log(
+                `[agent-webhook] updated status report #${action.statusReportId}`
+            )
             continue
         }
 
@@ -75,5 +81,8 @@ export async function executeDecision(
             statusReportId: action.statusReportId,
             message: action.message
         })
+        console.log(
+            `[agent-webhook] resolved status report #${action.statusReportId}`
+        )
     }
 }

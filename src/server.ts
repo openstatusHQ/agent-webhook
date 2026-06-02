@@ -15,6 +15,13 @@ function safeEqual(a: string, b: string): boolean {
     return timingSafeEqual(ah, bh)
 }
 
+process.on("unhandledRejection", (reason) => {
+    console.error("[agent-webhook] unhandledRejection", reason)
+})
+process.on("uncaughtException", (error) => {
+    console.error("[agent-webhook] uncaughtException", error)
+})
+
 const app = new Hono()
 
 app.get("/", (c) => {
@@ -22,6 +29,8 @@ app.get("/", (c) => {
 })
 
 app.post("/webhook", async (c) => {
+    const receivedAt = performance.now()
+
     if (
         !safeEqual(c.req.header("x-webhook-secret") ?? "", env.WEBHOOK_SECRET)
     ) {
@@ -42,8 +51,10 @@ app.post("/webhook", async (c) => {
         return c.json({ status: "duplicate" }, 200)
     }
 
-    void handleEvent(payload).catch((error) => {
-        console.error("[agent-webhook] handleEvent failed", error)
+    const label = `${payload.status} ${payload.monitor.name} (#${payload.monitor.id})`
+    console.log(`[agent-webhook] received — ${label}`)
+    void handleEvent(payload, receivedAt).catch((error) => {
+        console.error(`[agent-webhook] handleEvent failed — ${label}`, error)
     })
 
     return c.json({ status: "accepted" }, 202)

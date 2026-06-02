@@ -15,7 +15,8 @@ export async function runAgent(
         system: buildSystemPrompt(),
         prompt: describeEvent(event),
         tools: client.readTools,
-        stopWhen: stepCountIs(8),
+        stopWhen: stepCountIs(12),
+        timeout: 60_000,
         output: Output.object({ schema: Decision })
     })
     return result.output
