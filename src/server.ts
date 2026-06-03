@@ -2,7 +2,6 @@ import { createHash, timingSafeEqual } from "node:crypto"
 
 import { type } from "arktype"
 import { Hono } from "hono"
-import { serve } from "srvx"
 
 import { eventKey, markIfNew } from "./dedup.ts"
 import { env } from "./env.ts"
@@ -51,7 +50,8 @@ app.post("/webhook", async (c) => {
         return c.json({ status: "duplicate" }, 200)
     }
 
-    const label = `${payload.status} ${payload.monitor.name} (#${payload.monitor.id})`
+    const label =
+        `${payload.status} ${payload.monitor.name} (#${payload.monitor.id})`
     console.log(`[agent-webhook] received — ${label}`)
     void handleEvent(payload, receivedAt).catch((error) => {
         console.error(`[agent-webhook] handleEvent failed — ${label}`, error)
@@ -60,4 +60,4 @@ app.post("/webhook", async (c) => {
     return c.json({ status: "accepted" }, 202)
 })
 
-serve({ port: env.PORT, fetch: app.fetch })
+Deno.serve({ port: env.PORT }, app.fetch)

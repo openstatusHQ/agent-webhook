@@ -89,7 +89,7 @@ const status: Status =
         ? (arg as Status)
         : pick(STATUSES)
 
-const url = process.env.WEBHOOK_URL ?? "http://localhost:3000/webhook"
+const url = process.env.WEBHOOK_URL ?? "http://localhost:8000/webhook"
 const secret = process.env.WEBHOOK_SECRET ?? ""
 const payload = buildPayload(status)
 

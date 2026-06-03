@@ -1,9 +1,5 @@
 import arkenv from "arkenv"
-import { env as processEnv, loadEnvFile } from "node:process"
-
-try {
-    loadEnvFile()
-} catch { }
+import { env as processEnv } from "node:process"
 
 export const env = arkenv(
     {

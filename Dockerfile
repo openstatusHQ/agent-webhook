@@ -1,24 +1,13 @@
-FROM node:24-alpine AS installer
-
-WORKDIR /app
-
-ENV PNPM_HOME="/pnpm"
-ENV PATH="$PNPM_HOME:$PATH"
-RUN npm install -g corepack@latest
-RUN corepack enable
-
-# Copy package files first for better caching
-COPY package.json pnpm-lock.yaml ./
-
-# Install dependencies
-RUN pnpm install --frozen-lockfile
-
-
 FROM denoland/deno:alpine AS builder
 
 WORKDIR /app
 
-COPY --from=installer /app/node_modules ./node_modules
+# Copy package files first for better caching
+COPY deno.json deno.lock ./
+
+# Install dependencies
+RUN deno i
+
 COPY . .
 
 RUN deno compile \
@@ -26,6 +15,7 @@ RUN deno compile \
     --output /app/server ./src/server.ts
 
 
+# Tiny runtime image with just the compiled binary
 FROM registry.access.redhat.com/hi/core-runtime:latest
 
 WORKDIR /app
