@@ -3,7 +3,7 @@
     "tasks": {
         "dev": "deno run --env-file --watch --allow-env --allow-read --allow-sys --allow-net ./src/server.ts",
         "start": "deno run --env-file ./src/server.ts",
-        "test": "deno run --env-file test.ts",
+        "test": "deno run --env-file --allow-env --allow-net test.ts",
         "mock": "deno run --env-file --allow-env --allow-net test.ts"
     },
     "imports": {

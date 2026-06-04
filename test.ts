@@ -1,5 +1,5 @@
 // Fires a randomised mock OpenStatus webhook at the running agent-webhook.
-// Usage: node test.ts [degraded|error|recovered]
+// Usage: deno task mock [degraded|error|recovered]
 // Env: WEBHOOK_URL (default http://localhost:3000/webhook), WEBHOOK_SECRET
 
 export {}
@@ -83,14 +83,14 @@ function buildPayload(status: Status): Payload {
     return payload
 }
 
-const arg = process.argv[2]
+const arg = Deno.args[0]
 const status: Status =
     arg !== undefined && (STATUSES as readonly string[]).includes(arg)
         ? (arg as Status)
         : pick(STATUSES)
 
-const url = process.env.WEBHOOK_URL ?? "http://localhost:8000/webhook"
-const secret = process.env.WEBHOOK_SECRET ?? ""
+const url = Deno.env.get("WEBHOOK_URL") ?? "http://localhost:3000/webhook"
+const secret = Deno.env.get("WEBHOOK_SECRET") ?? ""
 const payload = buildPayload(status)
 
 console.log(`POST ${url}`)

@@ -22,7 +22,7 @@ is written.
 1. Install deps:
 
     ```sh
-    pnpm install
+    deno install
     ```
 
 2. Configure env (see `.env.example`):
@@ -39,19 +39,19 @@ is written.
 4. Run:
 
     ```sh
-    pnpm dev
+    deno task dev
     ```
 
 5. Once the dry-run logs look right, set `DRY_RUN=false` to publish for real.
 
 ## Scripts
 
-- `pnpm dev` — run the server (watch mode).
-- `pnpm start` — run in production mode.
-- `pnpm mock [degraded|error|recovered]` — fire a randomised mock event at the
-  server (`node test.ts`); set `WEBHOOK_URL` / `WEBHOOK_SECRET` to match.
-- `pnpm typecheck` — `tsc --noEmit`.
-- `pnpm fmt` / `pnpm fmt:check` — format with oxfmt.
+- `deno task dev` — run the server (watch mode).
+- `deno task start` — run in production mode.
+- `deno task mock [degraded|error|recovered]` — fire a randomised mock event at
+  the server (`test.ts`); set `WEBHOOK_URL` / `WEBHOOK_SECRET` to match.
+- `deno check src/server.ts` — type-check.
+- `deno fmt` / `deno fmt --check` — format.
 
 ## Endpoints
 
@@ -59,10 +59,10 @@ is written.
 - `POST /webhook` — OpenStatus webhook receiver. Verifies `x-webhook-secret`,
   validates the payload, dedupes, acks `202`, then processes in the background.
 
-Test the entry without starting a listener using srvx's `fetch` subcommand:
+With the server running (`deno task dev`), hit it directly:
 
 ```sh
-pnpm exec srvx fetch /webhook --entry ./src/server.ts -X POST \
+curl -X POST http://localhost:3000/webhook \
   -H 'content-type: application/json' -H 'x-webhook-secret: <secret>' \
   -d '{"monitor":{"id":1,"name":"API","url":"https://api.example.com"},"cronTimestamp":1730000000000,"status":"error","statusCode":500}'
 ```
